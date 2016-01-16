@@ -3,47 +3,77 @@ import sys
 import requests
 import urllib
 
-if len(sys.argv) != 2 :
-    print("arguments error")
-    exit(0)
+# 本文取得
+def gethtml(argv):
+    title = urllib.parse.quote_plus(sys.argv[1])
+    url='http://ja.wikipedia.org/w/api.php?format=xml&action=query&prop=revisions&titles='+title+'&rvprop=content'
+    r = requests.get(url)
+    return r.text
 
-title = urllib.parse.quote_plus(sys.argv[1])
+# linesに本文htmlを1行毎にリストに格納
+def linesget(get):
+    lines=[]
+    tmp=""
+    st=""
+    for tmp in get:
+        st=st+tmp
+        if tmp == "\n" :
+            lines.append(st)
+            st=""
+    return lines
 
-#test-url
-# url='http://ja.wikipedia.org/w/api.php?format=xml&action=query&prop=revisions&titles=%E3%81%AE%E3%82%93%E3%81%AE%E3%82%93%E3%81%B3%E3%82%88%E3%82%8A&rvprop=content'
+#-------main--------------------
+if __name__ == '__main__' :
+    lines=[]
+    infolines=[]
+    #引数処理
+    if len(sys.argv) != 2 :
+        print("arguments error")
+        exit(0)
 
-url='http://ja.wikipedia.org/w/api.php?format=xml&action=query&prop=revisions&titles='+title+'&rvprop=content'
+    #本文html取得
+    get=gethtml(sys.argv[1])
 
-r = requests.get(url)
-get=r.text
+    #1行毎にリストに格納
+    lines=linesget(get)
 
-lines=[]
-tmp=""
-st=""
+    #声優一覧取得
+    line=""
+    for line in lines :
+        if '声優|声' in line :
+            print(line)
+        if '声 - ' in line :
+            print(line)
 
-for tmp in get:
-    st=st+tmp
-    if tmp == "\n" :
-        lines.append(st)
-        st=""
+    # infoboxを抜き出す
+    flag=0
+    getline=""
+    for line in lines:
+        if line.startswith("{{Infobox") == True :
+            getline = getline + line
+            flag=1
+        if flag == 1:
+            getline = getline + line
+        if line.startswith("}}") ==  True :
+            flag=0
+    #1行毎にリストに格納
+    infolines=linesget(getline)
 
-flag=0
-getline=""
-for line in lines:
-    if line.startswith("{{Infobox") == True :
-        getline = getline + line
-        flag=1
-    if flag == 1:
-        getline = getline + line
-    if line.startswith("}}") ==  True :
-        flag=0
-print (getline)
-
-
-
-
-
-
+    #infobox内の指定情報取得
+    line=""
+    for line in infolines :
+        if '監督' in line :
+            print(line)
+        if 'キャラクターデザイン' in line :
+            print(line)
+        if 'アニメーション制作' in line :
+            print(line)
+        # if '出版社' in line :
+        #     print(line)
+        # if '原作' in line :
+        #     print(line)
+        # if 'レーベル' in line :
+        #     print(line)
 
 
 
