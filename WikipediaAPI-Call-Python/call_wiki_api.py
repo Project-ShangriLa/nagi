@@ -67,7 +67,7 @@ def get_infobox(lines):
         # if 'レーベル' in line :
         #     info.append("レーベル")
         #     info+=re.findall('=(.*)',line)
-    print(info)
+    return info
 ##アニメ制作の情報を抽出-----ここまで---------
 
 
@@ -79,7 +79,7 @@ def get_cv_list(lines):
             cv_list+=re.findall('\[+(.*?.)\]+',line)
         if '声 - ' in line :
             cv_list+=re.findall('\[+(.*?.)\]+',line)
-    print(cv_list)
+    return cv_list
 
 
 #エラー表示
@@ -116,11 +116,14 @@ if __name__ == '__main__' :
 
     #声優一覧取得
     if pflag != 2 :
-        get_cv_list(lines)
+        cv_list=[]
+        cv_list=get_cv_list(lines)
+        print(cv_list)
 
     # infoboxを抜き出す
     if pflag == 1 :  exit(0)
-    get_infobox(lines)
-
+    infolines=[]
+    infolines=get_infobox(lines)
+    print(infolines)
 
 
