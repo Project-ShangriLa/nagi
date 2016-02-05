@@ -2,13 +2,19 @@
 import sys
 import requests
 import urllib
+import re
 
 # 本文取得
 def gethtml(argv):
-    title = urllib.parse.quote_plus(sys.argv[1])
+    title = urllib.parse.quote_plus(argv)
     url='http://ja.wikipedia.org/w/api.php?format=xml&action=query&prop=revisions&titles='+title+'&rvprop=content'
     r = requests.get(url)
-    return r.text
+    #wikipediaのページが取ってこれなければエラーを返す
+    if "missing" in r.text :
+        print("wiki page not find")
+        exit(0)
+    else:
+        return r.text
 
 # linesに本文htmlを1行毎にリストに格納
 def linesget(get):
@@ -22,30 +28,9 @@ def linesget(get):
             st=""
     return lines
 
-#-------main--------------------
-if __name__ == '__main__' :
-    lines=[]
-    infolines=[]
-    #引数処理
-    if len(sys.argv) != 2 :
-        print("arguments error")
-        exit(0)
 
-    #本文html取得
-    get=gethtml(sys.argv[1])
-
-    #1行毎にリストに格納
-    lines=linesget(get)
-
-    #声優一覧取得
-    line=""
-    for line in lines :
-        if '声優|声' in line :
-            print(line)
-        if '声 - ' in line :
-            print(line)
-
-    # infoboxを抜き出す
+#アニメ制作の情報を抽出
+def get_infobox(lines):
     flag=0
     getline=""
     for line in lines:
@@ -56,25 +41,86 @@ if __name__ == '__main__' :
             getline = getline + line
         if line.startswith("}}") ==  True :
             flag=0
+
     #1行毎にリストに格納
+    infolines=[]
     infolines=linesget(getline)
 
     #infobox内の指定情報取得
-    line=""
+    info=[]
     for line in infolines :
         if '監督' in line :
-            print(line)
+            info.append("監督")
+            info+=re.findall('\[+(.*?.)\]+',line)
         if 'キャラクターデザイン' in line :
-            print(line)
+            info.append("キャラデザ")
+            info+=re.findall('=(.*)',line)
         if 'アニメーション制作' in line :
-            print(line)
+            info.append("制作")
+            info+=re.findall('=(.*)',line)
         # if '出版社' in line :
-        #     print(line)
+        #     info.append("出版社")
+        #     info+=re.findall('=(.*)',line)
         # if '原作' in line :
-        #     print(line)
+        #     info.append("原作")
+        #     info+=re.findall('=(.*)',line)
         # if 'レーベル' in line :
-        #     print(line)
+        #     info.append("レーベル")
+        #     info+=re.findall('=(.*)',line)
+    print(info)
+##アニメ制作の情報を抽出-----ここまで---------
 
+
+#声優一覧取得
+def get_cv_list(lines):
+    cv_list=[]
+    for line in lines :
+        if '声優|声' in line :
+            cv_list+=re.findall('\[+(.*?.)\]+',line)
+        if '声 - ' in line :
+            cv_list+=re.findall('\[+(.*?.)\]+',line)
+    print(cv_list)
+
+
+#エラー表示
+def printerror():
+    print("argument error")
+    print("python3 call_wiki_api.py [param] [anime_title] ")
+    print("argument : [-c] or [-i] ")
+    print(" [-c] : print charactor voice ")
+    print(" [-i] : print info ")
+    exit(1)
+
+#-------main--------------------
+if __name__ == '__main__' :
+    #引数処理
+    param = sys.argv
+    argc = len(param)
+
+    if argc != 2 and argc != 3 and argc != 4 :
+        printerror()
+
+    pflag=-1
+    if argc == 2 :  pflag=0
+    if "-c" in param : pflag+=2
+    if "-i" in param : pflag+=3
+
+    if( argc == 3 or argc ==4 ) and pflag < 0 :
+        printerror()
+
+   #本文html取得
+    get=gethtml(str(param[-1]))
+    #1行毎にリストに格納
+    lines=[]
+    lines=linesget(get)
+
+    #声優一覧取得
+    if pflag != 2 :
+        get_cv_list(lines)
+
+    # infoboxを抜き出す
+    if pflag == 1 :  exit(0)
+    get_infobox(lines)
 
 
 
