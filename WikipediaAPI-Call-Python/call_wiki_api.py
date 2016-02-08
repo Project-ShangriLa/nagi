@@ -12,7 +12,7 @@ def gethtml(argv):
     #wikipediaのページが取ってこれなければエラーを返す
     if "missing" in r.text :
         print("wiki page not find")
-        exit(0)
+        sys.exit(0)
     else:
         return r.text
 
@@ -83,30 +83,32 @@ def get_cv_list(lines):
 
 
 #エラー表示
-def printerror():
+def print_error():
     print("argument error")
     print("python3 call_wiki_api.py [param] [anime_title] ")
     print("argument : [-c] or [-i] ")
     print(" [-c] : print charactor voice ")
     print(" [-i] : print info ")
-    exit(1)
-
+    sys.exit(1)
 #-------main--------------------
 if __name__ == '__main__' :
+
     #引数処理
     param = sys.argv
     argc = len(param)
 
     if argc != 2 and argc != 3 and argc != 4 :
-        printerror()
+        print_error()
 
     pflag=-1
     if argc == 2 :  pflag=0
     if "-c" in param : pflag+=2
     if "-i" in param : pflag+=3
+    print(argc)
+    print(pflag)
 
     if( argc == 3 or argc ==4 ) and pflag < 0 :
-        printerror()
+        print_error()
 
    #本文html取得
     get=gethtml(str(param[-1]))
@@ -121,7 +123,7 @@ if __name__ == '__main__' :
         print(cv_list)
 
     # infoboxを抜き出す
-    if pflag == 1 :  exit(0)
+    if pflag == 1 :  sys.exit(0)
     infolines=[]
     infolines=get_infobox(lines)
     print(infolines)
