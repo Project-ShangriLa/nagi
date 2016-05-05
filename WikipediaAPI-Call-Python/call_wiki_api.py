@@ -3,7 +3,7 @@ import sys
 import requests
 import urllib
 import re
-
+#------------------------------------------------------------#
 # 本文取得
 def gethtml(argv):
     title = urllib.parse.quote_plus(argv)
@@ -16,6 +16,8 @@ def gethtml(argv):
     else:
         return r.text
 
+
+#------------------------------------------------------------#
 # linesに本文htmlを1行毎にリストに格納
 def linesget(get):
     lines=[]
@@ -28,7 +30,7 @@ def linesget(get):
             st=""
     return lines
 
-
+#------------------------------------------------------------#
 #アニメ制作の情報を抽出
 def get_infobox(lines):
     flag=0
@@ -71,6 +73,7 @@ def get_infobox(lines):
 ##アニメ制作の情報を抽出-----ここまで---------
 
 
+#------------------------------------------------------------#
 #声優一覧取得
 def get_cv_list(lines):
     cv_list=[]
@@ -81,7 +84,7 @@ def get_cv_list(lines):
             cv_list+=re.findall('\[+(.*?.)\]+',line)
     return cv_list
 
-
+#------------------------------------------------------------#
 #エラー表示
 def print_error():
     print("argument error")
@@ -90,13 +93,11 @@ def print_error():
     print(" [-c] : print charactor voice ")
     print(" [-i] : print info ")
     sys.exit(1)
-#-------main--------------------
-if __name__ == '__main__' :
-
+#------------------------------------------------------------#
+def arg_parse():
     #引数処理
     param = sys.argv
     argc = len(param)
-
     if argc != 2 and argc != 3 and argc != 4 :
         print_error()
 
@@ -104,14 +105,19 @@ if __name__ == '__main__' :
     if argc == 2 :  pflag=0
     if "-c" in param : pflag+=2
     if "-i" in param : pflag+=3
-    print(argc)
-    print(pflag)
 
     if( argc == 3 or argc ==4 ) and pflag < 0 :
         print_error()
 
+    return pflag
+
+#------------------------------------------------------------#
+def main():
+    #引数処理
+    pflag = arg_parse()
+
    #本文html取得
-    get=gethtml(str(param[-1]))
+    get=gethtml(str(sys.argv[-1]))
     #1行毎にリストに格納
     lines=[]
     lines=linesget(get)
@@ -129,3 +135,8 @@ if __name__ == '__main__' :
     print(infolines)
 
 
+
+
+#-------main--------------------
+if __name__ == '__main__' :
+    main()
